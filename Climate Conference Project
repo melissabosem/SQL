@@ -1,0 +1,79 @@
+Climate Conference Project
+Database: https://www.db-fiddle.com/f/pxMci1sLL945KHKYvpe9W6/1
+
+--Q1 using INNER JOIN: What VIPs have RSVP'd to the welcome event AND the dinner?
+
+SELECT vips.first_name
+, vips.last_name
+FROM vips
+JOIN reservations AS r ON vips.member_id = r.member_id
+WHERE r.welcome_rsvp = 1 AND r.dinner_rsvp = 1;
+
+--Q2 using LEFT JOIN: List all VIPs and their associated hotel reservations, including VIPs who may not have hotel reservations
+
+SELECT vips.first_name
+, vips.last_name
+, r.hotel
+FROM vips
+LEFT JOIN reservations AS r ON vips.member_id = r.member_id;
+
+--Q3 using MULTIPLE JOINs: For each VIP, show their name, hotel, and events they are attending
+
+SELECT vips.first_name
+, vips.last_name
+, h.hotel_name
+, e.event_name
+FROM vips
+LEFT JOIN reservations AS r ON vips.member_id = r.member_id
+JOIN events AS e ON vips.event = e.event_id
+JOIN hotels AS h ON r.hotel = h.hotel_id
+GROUP BY vips.first_name, vips.last_name;
+
+--Q4 using SUBQUERIES: The conference can organize a shuttle bus if a hotel has more than 10 attendees. Which VIPs are staying at a hotel eligible for shuttle service?
+
+SELECT vips.first_name
+, vips.last_name
+FROM vips
+JOIN reservations AS r ON vips.member_id = r.member_id
+WHERE r.hotel IN
+
+(SELECT h.hotel_id
+FROM hotels AS h
+JOIN reservations AS r ON h.hotel_id = r.hotel
+GROUP BY h.hotel_id
+HAVING COUNT(r.member_id) > 10);
+
+
+
+--Q5 using SELF JOINs: Which VIPs are assigned to give feedback to other speakers/presenters? 
+
+SELECT v1.first_name AS reviewer_first
+,      v1.last_name AS reviewer_last
+,      v2.first_name AS speaker_first
+,      v2.last_name AS speaker_last
+FROM vips v1
+JOIN vips v2 ON v1.provides_feedback_to = v2.member_id;
+
+
+
+
+--Q6 How many VIPs are attending each event? Sort by event attendance. Show the event name, type, and attendance.
+
+SELECT DISTINCT e.event_name
+, e.event_type
+, COUNT(v.member_id)
+FROM events AS e
+JOIN vips AS v ON e.event_id = v.event
+GROUP BY e.event_name, e.event_type
+ORDER BY COUNT(v.member_id) desc;
+
+
+
+--Q7 What is the average membership start date for each category of VIP? Organize from earliest.
+
+SELECT vips.assoc_type
+, ROUND (AVG(vips.member_since), 0) AS 'Avg. Entry Year'
+FROM vips
+GROUP BY vips.assoc_type
+ORDER BY AVG(vips.member_since) asc;
+
