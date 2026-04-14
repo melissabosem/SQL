@@ -1,0 +1,97 @@
+# For this project, I downloaded Spotify data from Kaggle.
+# Then I created a table to insert Spotify data into.
+# Finally, I performed analytics on the data using SQL. 
+
+#Creating the table: 
+CREATE TABLE BIT_DB.Spotifydata (
+id integer PRIMARY KEY,
+artist_name varchar NOT NULL,
+track_name varchar NOT NULL,
+track_id varchar NOT NULL,
+popularity integer NOT NULL,
+danceability decimal(4,3) NOT NULL,
+energy decimal(4,3) NOT NULL,
+key integer NOT NULL,
+loudness decimal(5,3) NOT NULL,
+mode integer NOT NULL,
+speechiness decimal(5,4) NOT NULL,
+acousticness decimal(6,5) NOT NULL,
+instrumentalness text NOT NULL,
+liveness decimal(5,4) NOT NULL,
+valence decimal(4,3) NOT NULL,
+tempo decimal(6,3) NOT NULL,
+duration_ms integer NOT NULL,
+time_signature integer NOT NULL 
+)
+
+#Then I inserted the Spotify Data .csv into the table.
+
+#Next, I explored the data using the following SQL, focusing on artist trends, song characteristics, and artist popularity.
+
+-- #1. Who are the top most danceable artists? Select from repeat artists.
+SELECT artist_name,
+      round(AVG(danceability), 3) AS avg_danceability
+FROM spotifydata
+GROUP BY artist_name
+HAVING COUNT(*) >= 2
+ORDER BY AVG(danceability) DESC
+LIMIT 5;
+
+-- #2. What is the most common song key? The most common time signature? What songs and artists have the rarest time signature?
+SELECT song_key
+, count(*) AS key_count
+FROM spotifydata
+GROUP BY song_key
+ORDER BY key_count DESC;
+
+SELECT time_signature
+, count(time_signature)
+FROM spotifydata
+GROUP BY time_signature;
+
+SELECT artist_name
+, track_name
+, popularity
+FROM spotifydata
+WHERE time_signature = 3;
+
+--#3. What are the least acoustic songs? 
+SELECT track_name
+, acousticness
+FROM spotifydata
+ORDER BY acousticness ASC;
+
+--#4. What songs are longer than average? Is there danceability higher or lower than average?
+SELECT track_name
+, duration_ms 
+, danceability
+FROM spotifydata
+WHERE duration_ms > (SELECT avg(duration_ms) FROM spotifydata)
+AND danceability > (SELECT avg(danceability) FROM spotifydata);
+
+--#5. Filter the top 50 list into song-length and danceability categories
+SELECT track_name
+, 
+  CASE
+      WHEN duration_ms > (SELECT avg(duration_ms) FROM spotifydata)
+      THEN 'Long'
+      ELSE 'Short'
+  END AS length_category
+, 
+  CASE
+      WHEN danceability > (SELECT avg(danceability) FROM spotifydata)
+      THEN 'More Danceable'
+      ELSE 'Less Danceable'
+  END AS danceable_category
+  FROM spotifydata
+  ORDER BY length_category DESC
+  , danceable_category DESC;
+  
+-- #6. What artists are most represnted on the chart? What is their average popularity?
+SELECT artist_name,
+       COUNT(*) AS song_count,
+       ROUND(AVG(popularity), 2) AS avg_popularity
+FROM spotifydata
+GROUP BY artist_name
+HAVING COUNT(*) >= 2
+ORDER BY avg_popularity DESC;
