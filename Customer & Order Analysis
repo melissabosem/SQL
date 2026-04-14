@@ -55,3 +55,47 @@ ON Feb.orderid = cust.order_id
 WHERE Feb.Quantity > 2
 AND length (orderid)=6
 AND orderid <> 'Order ID';
+
+-- #9. How many of each type of headphone were sold in February?
+SELECT product
+, sum(quantity)
+FROM BIT_DB.FebSales
+WHERE product LIKE '%Headphones%'
+AND length(orderid) = 6
+AND orderid <> 'Order ID'
+GROUP BY product;
+
+-- #10. What was the average amount spent per account in February?
+SELECT ROUND (sum(quantity)*price/count(cust.acctnum), 2)
+FROM BIT_DB.FebSales AS Feb
+LEFT JOIN BIT_DB.customers AS cust
+ON Feb.orderid = cust.order_id
+AND length(orderid) = 6
+AND orderid <> 'Order ID';
+
+-- #11. Find order ids from Georgia where the order has an average price greater than $1000. Only find dates beginning with '04/1'
+SELECT orderID 
+FROM BIT_DB.AprSales
+WHERE orderdate LIKE '04/1%'
+AND location LIKE '%GA%'
+AND length(orderid) = 6
+AND orderid <> 'Order ID'
+GROUP BY orderid
+HAVING avg(price) > 1000;
+
+-- #12. Can you reverse engineer a SQL query to produce a specific table?
+SELECT location
+, orderid
+FROM BIT_DB.MaySales
+WHERE orderID LIKE '1943_5'
+AND length(orderid) = 6
+AND orderid <> 'Order ID'
+ORDER BY orderID;
+
+-- #13. Which product brought in the most revenue in January? How much revenue did it bring in total?
+SELECT product
+, sum(quantity*price) AS revenue 
+FROM BIT_DB.JanSales
+GROUP BY product
+ORDER BY revenue desc
+LIMIT 1;
