@@ -1,4 +1,4 @@
-#
+#This project uses the below city bike lane data from Philadelphia
 
 CREATE TABLE BIT_DB.CityBikeLanes (
 id integer primary key,
